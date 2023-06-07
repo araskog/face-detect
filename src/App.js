@@ -82,33 +82,34 @@ onInputChange = (event) => {
 // Use the face detection API upon submit
  onButtonSubmit = () => {
     this.setState({imageUrl: this.state.input});
-      fetch('https://aqueous-sierra-80129.herokuapp.com/imageurl', {
-        method: 'post',
-        headers: {'Content-Type': 'application/json'},
+      fetch("https://face-api-e5c6.onrender.com/imageurl", {
+        method: "post",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          input: this.state.input
+          input: this.state.input,
+        }),
+      })
+        .then((response) => response.json())
+        .then((response) => {
+          if (response) {
+            fetch("https://face-api-e5c6.onrender.com/image", {
+              method: "put",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                id: this.state.user.id,
+              }),
+            })
+              .then((response) => response.json())
+              .then((count) => {
+                this.setState(
+                  Object.assign(this.state.user, { entries: count })
+                );
+              })
+              .catch(console.log);
+          }
+          this.displayFaceBox(this.calculateFaceLocation(response));
         })
-      })
-      .then(response => response.json())
-      .then(response => {
-        if (response) {
-          fetch('https://aqueous-sierra-80129.herokuapp.com/image', {
-            method: 'put',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({
-              id: this.state.user.id
-            })
-          })
-            .then(response => response.json())
-            .then(count => {
-              this.setState(Object.assign(this.state.user, { entries: count}))
-            })
-            .catch(console.log)
-
-        }
-        this.displayFaceBox(this.calculateFaceLocation(response))
-      })
-      .catch(err => console.log(err));
+        .catch((err) => console.log(err));
   }
 
 // Manage user sign-in and sign-out
